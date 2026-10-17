@@ -1,0 +1,499 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Users, 
+  Lock, 
+  Eye, 
+  Zap, 
+  RefreshCw, 
+  Search, 
+  ChevronRight, 
+  Sparkles, 
+  ShieldAlert, 
+  CheckCircle2, 
+  Flame, 
+  Heart, 
+  Maximize2, 
+  Smartphone, 
+  Monitor,
+  X,
+  AlertCircle
+} from 'lucide-react';
+
+// Pool of realistic sample profiles to randomly draw from
+const NAMES_POOL = [
+  { name: 'Eila', username: 'eila_vibes', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', emoji: '💕' },
+  { name: 'Lily', username: 'lily.xo', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', emoji: '❤️' },
+  { name: 'Mia', username: 'mia_secret', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', emoji: '💛' },
+  { name: 'Chloe', username: 'chloe_night', avatar: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=150&auto=format&fit=crop&q=80', emoji: '🤫' },
+  { name: 'Emma', username: 'emma.star', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80', emoji: '✨' },
+  { name: 'Hannah', username: 'hannah_22', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', emoji: '⭐️' },
+  { name: 'Sophia', username: 'sophia_m', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80', emoji: '🔥' },
+  { name: 'Olivia', username: 'liv_liv', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', emoji: '💎' },
+  { name: 'Isabella', username: 'bella_x', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', emoji: '💋' },
+  { name: 'Ava', username: 'ava_rose', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', emoji: '🌸' },
+  { name: 'Noah', username: 'noah_fit', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', emoji: '⚡️' },
+  { name: 'Liam', username: 'liam_99', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', emoji: '🔥' },
+];
+
+const TIMESTAMPS = ['1m', '14m', '1h', '3h', '6h', '12h', '1d', '2d'];
+
+// Helper to shuffle and select dynamic random profiles
+const generateRandomFriends = () => {
+  const shuffled = [...NAMES_POOL].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 8).map((profile) => ({
+    ...profile,
+    streak: Math.floor(Math.random() * 250) + 15,
+    timestamp: TIMESTAMPS[Math.floor(Math.random() * TIMESTAMPS.length)],
+    score: (Math.floor(Math.random() * 80) + 10) * 100,
+  }));
+};
+
+export default function App() {
+  const [targetUser, setTargetUser] = useState('jack.schwarz881');
+  const [searchInput, setSearchInput] = useState('jack.schwarz881');
+  const [activeModal, setActiveModal] = useState(null); // 'friends', 'eyes', 'score', 'mod'
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState('');
+  const [friendsList, setFriendsList] = useState([]);
+  const [viewMode, setViewMode] = useState('full'); // 'full' or 'mobile-frame'
+
+  // Initialize friends list on component mount
+  useEffect(() => {
+    setFriendsList(generateRandomFriends());
+  }, []);
+
+  // Handle Target Search Submit
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!searchInput.trim()) return;
+    const cleaned = searchInput.replace('@', '').trim();
+    setTargetUser(cleaned);
+    setFriendsList(generateRandomFriends());
+  };
+
+  // Trigger Action Modal with Fake Loading Simulation
+  const handleFeatureClick = (featureKey) => {
+    setActiveModal(featureKey);
+    setIsLoading(true);
+    setLoadingProgress(0);
+
+    const steps = [
+      'Connecting to Snapchat API v12.4...',
+      `Bypassing privacy filters for @${targetUser}...`,
+      'Decrypting server cache...',
+      'Extracting friend interactions...',
+      'Finalizing data render...'
+    ];
+
+    let currentStep = 0;
+    setLoadingText(steps[0]);
+
+    const interval = setInterval(() => {
+      setLoadingProgress((prev) => {
+        const next = prev + 20;
+        if (next >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setIsLoading(false), 300);
+          return 100;
+        }
+        currentStep = Math.min(Math.floor(next / 20), steps.length - 1);
+        setLoadingText(steps[currentStep]);
+        return next;
+      });
+    }, 400);
+  };
+
+  // Immediate Rotation of Profiles
+  const handleRotateProfiles = () => {
+    setFriendsList(generateRandomFriends());
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-white font-sans flex flex-col items-center justify-start p-2 sm:p-4 md:p-6 selection:bg-yellow-400 selection:text-black">
+      {/* Top Banner / Device Frame Switcher */}
+      <div className="w-full max-w-4xl mb-4 flex items-center justify-between bg-[#141419] border border-white/10 rounded-2xl px-4 py-2.5 shadow-lg">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="font-bold tracking-wider text-xs uppercase text-yellow-400">
+            STREAKVADE v3.2 PRO
+          </span>
+        </div>
+        <div className="flex items-center gap-2 bg-[#0a0a0c] p-1 rounded-xl border border-white/5">
+          <button
+            onClick={() => setViewMode('full')}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+              viewMode === 'full'
+                ? 'bg-yellow-400 text-black shadow-md'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Monitor className="w-3.5 h-3.5" /> Desktop
+          </button>
+          <button
+            onClick={() => setViewMode('mobile-frame')}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+              viewMode === 'mobile-frame'
+                ? 'bg-yellow-400 text-black shadow-md'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5" /> Mobile Frame
+          </button>
+        </div>
+      </div>
+
+      {/* Main Container Container */}
+      <div
+        className={`w-full transition-all duration-300 ${
+          viewMode === 'mobile-frame'
+            ? 'max-w-[410px] border-[8px] border-[#22222b] rounded-[40px] shadow-2xl bg-[#121217] overflow-hidden my-4'
+            : 'max-w-4xl bg-[#121217] border border-white/10 rounded-3xl p-4 sm:p-8 shadow-2xl'
+        }`}
+      >
+        {/* Header Bar inside frame */}
+        <div className="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 shadow-lg shadow-yellow-500/20">
+                <div className="w-full h-full bg-[#181820] rounded-[14px] flex items-center justify-center font-black text-yellow-400 text-xl">
+                  👻
+                </div>
+              </div>
+              <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#121217]"></span>
+              </span>
+            </div>
+            <div>
+              <h1 className="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+                namesios
+                <span className="text-[10px] font-bold bg-yellow-400/10 text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded-full uppercase">
+                  Active
+                </span>
+              </h1>
+              <p className="text-xs text-zinc-400">Snapchat Analytics & Insights</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleRotateProfiles}
+            className="flex items-center gap-1.5 text-xs font-semibold text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20 border border-yellow-400/30 px-3 py-2 rounded-xl transition-all active:scale-95"
+            title="Randomize dynamic profiles pool"
+          >
+            <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
+            <span className="hidden sm:inline">Rotate Data</span>
+          </button>
+        </div>
+
+        {/* Target User Search Bar */}
+        <div className="mb-6 bg-[#181822] border border-white/10 p-3 sm:p-4 rounded-2xl shadow-inner">
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+            Target Snapchat Account
+          </label>
+          <form onSubmit={handleSearchSubmit} className="flex gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                @
+              </div>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="enter_username"
+                className="w-full pl-8 pr-4 py-2.5 bg-[#0e0e12] border border-white/10 rounded-xl text-sm font-medium text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-400 transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-sm rounded-xl transition-all shadow-lg shadow-yellow-400/10 active:scale-95 flex items-center gap-1"
+            >
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline">Target</span>
+            </button>
+          </form>
+
+          {/* Active Target Info Card */}
+          <div className="mt-3 flex items-center justify-between pt-3 border-t border-white/5 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-yellow-400/20 border border-yellow-400/40 flex items-center justify-center font-bold text-yellow-400">
+                {targetUser.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <span className="text-zinc-400">Current Target: </span>
+                <span className="font-bold text-white">@{targetUser}</span>
+              </div>
+            </div>
+            <span className="text-[11px] text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+              <CheckCircle2 className="w-3 h-3" /> Ready
+            </span>
+          </div>
+        </div>
+
+        {/* Feature Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
+          {/* Feature 1: Best Friend List */}
+          <div
+            onClick={() => handleFeatureClick('friends')}
+            className="group relative bg-[#181822] hover:bg-[#1f1f2d] border border-white/10 hover:border-yellow-400/50 p-4 rounded-2xl cursor-pointer transition-all duration-200 shadow-md hover:shadow-yellow-400/5"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center text-yellow-400 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+              <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-yellow-400 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <h3 className="font-bold text-white text-base mb-1 group-hover:text-yellow-400 transition-colors">
+              Best Friend List
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Reveal top 8 best friends for @{targetUser}
+            </p>
+          </div>
+
+          {/* Feature 2: My Eyes Only */}
+          <div
+            onClick={() => handleFeatureClick('eyes')}
+            className="group relative bg-[#181822] hover:bg-[#1f1f2d] border border-white/10 hover:border-yellow-400/50 p-4 rounded-2xl cursor-pointer transition-all duration-200 shadow-md hover:shadow-yellow-400/5"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                <Lock className="w-5 h-5" />
+              </div>
+              <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-yellow-400 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <h3 className="font-bold text-white text-base mb-1 group-hover:text-yellow-400 transition-colors">
+              My Eyes Only
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Request hidden memories & vaulted snaps
+            </p>
+          </div>
+
+          {/* Feature 3: Snap Score & Views */}
+          <div
+            onClick={() => handleFeatureClick('score')}
+            className="group relative bg-[#181822] hover:bg-[#1f1f2d] border border-white/10 hover:border-yellow-400/50 p-4 rounded-2xl cursor-pointer transition-all duration-200 shadow-md hover:shadow-yellow-400/5"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center text-yellow-400 group-hover:scale-110 transition-transform">
+                <Eye className="w-5 h-5" />
+              </div>
+              <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-yellow-400 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <h3 className="font-bold text-white text-base mb-1 group-hover:text-yellow-400 transition-colors">
+              Snap Score & Profile Views
+            </h3>
+            <p className="text-xs text-zinc-400">
+              See secret profile visitors and detailed score stats
+            </p>
+          </div>
+
+          {/* Feature 4: Snapping with Mod */}
+          <div
+            onClick={() => handleFeatureClick('mod')}
+            className="group relative bg-[#181822] hover:bg-[#1f1f2d] border border-white/10 hover:border-yellow-400/50 p-4 rounded-2xl cursor-pointer transition-all duration-200 shadow-md hover:shadow-yellow-400/5"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                <Zap className="w-5 h-5" />
+              </div>
+              <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-yellow-400 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <h3 className="font-bold text-white text-base mb-1 group-hover:text-yellow-400 transition-colors">
+              Snapping with Mod
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Find out active streak holders right now
+            </p>
+          </div>
+        </div>
+
+        {/* Footer info note */}
+        <div className="text-center text-[11px] text-zinc-500 border-t border-white/5 pt-4 flex items-center justify-center gap-1.5">
+          <ShieldAlert className="w-3.5 h-3.5 text-yellow-400/70" />
+          <span>STREAKVADE TikTok Studio Edition • Optimized for video recording</span>
+        </div>
+      </div>
+
+      {/* POPUP MODAL SCREEN */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="w-full max-w-md bg-[#121217] border border-white/15 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-4 bg-[#181822] border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-ping" />
+                <h2 className="font-bold text-base text-white">
+                  {activeModal === 'friends' && 'Best Friends List'}
+                  {activeModal === 'eyes' && 'My Eyes Only Memories'}
+                  {activeModal === 'score' && 'Snap Score Analytics'}
+                  {activeModal === 'mod' && 'Live Snapping Mod'}
+                </h2>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 overflow-y-auto flex-1">
+              {/* LOADING STATE */}
+              {isLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center">
+                  <div className="relative w-16 h-16 mb-6">
+                    <div className="absolute inset-0 rounded-full border-4 border-yellow-400/20 border-t-yellow-400 animate-spin" />
+                    <div className="absolute inset-2 rounded-full border-4 border-amber-500/20 border-b-amber-500 animate-spin-slow" />
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-yellow-400">
+                      {loadingProgress}%
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold text-white mb-2 animate-pulse">
+                    {loadingText}
+                  </p>
+                  <p className="text-xs text-zinc-500">Target: @{targetUser}</p>
+
+                  <div className="w-48 bg-zinc-800 h-1.5 rounded-full mt-4 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-yellow-400 to-amber-500 h-full transition-all duration-300"
+                      style={{ width: `${loadingProgress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* RESULTS DISPLAY */
+                <div>
+                  {/* Rotating Trigger Controls inside Modal for recording ease */}
+                  <div className="mb-4 bg-[#181822] border border-yellow-400/30 p-3 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-white">Target: @{targetUser}</p>
+                      <p className="text-[10px] text-zinc-400">8 Best Friends Identified</p>
+                    </div>
+                    <button
+                      onClick={handleRotateProfiles}
+                      className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs rounded-xl shadow transition-transform active:scale-95 flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Rotate Profiles
+                    </button>
+                  </div>
+
+                  {/* SPECIFIC VIEW: BEST FRIENDS LIST */}
+                  {activeModal === 'friends' && (
+                    <div className="space-y-2.5">
+                      {friendsList.map((friend, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#181822] hover:bg-[#1f1f2d] border border-white/5 p-3 rounded-2xl flex items-center justify-between transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="font-extrabold text-xs text-zinc-500 w-4 text-center">
+                              #{idx + 1}
+                            </span>
+                            <img
+                              src={friend.avatar}
+                              alt={friend.name}
+                              className="w-11 h-11 rounded-full object-cover border-2 border-yellow-400/40 shadow"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="font-bold text-sm text-white">{friend.name}</h4>
+                                <span className="text-xs">{friend.emoji}</span>
+                              </div>
+                              <p className="text-xs text-zinc-400">@{friend.username}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-0.5">
+                            <div className="flex items-center gap-1 text-xs font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-lg border border-amber-400/20">
+                              <Flame className="w-3.5 h-3.5 fill-amber-400" />
+                              {friend.streak}
+                            </div>
+                            <span className="text-[10px] text-zinc-500 font-medium">
+                              ⏱️ {friend.timestamp} ago
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* OTHER MODAL VIEWS */}
+                  {activeModal === 'eyes' && (
+                    <div className="py-6 text-center">
+                      <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+                        <Lock className="w-8 h-8" />
+                      </div>
+                      <h3 className="font-bold text-lg text-white mb-1">Passcode Override Ready</h3>
+                      <p className="text-xs text-zinc-400 mb-4 max-w-xs mx-auto">
+                        Found 24 private Snaps saved in @{targetUser}'s My Eyes Only vault.
+                      </p>
+                      <button className="w-full py-3 bg-yellow-400 font-bold text-black rounded-xl text-sm hover:bg-yellow-300 transition-colors shadow-lg">
+                        Decrypt 24 Snaps Now
+                      </button>
+                    </div>
+                  )}
+
+                  {activeModal === 'score' && (
+                    <div className="space-y-3">
+                      <div className="p-4 bg-[#181822] rounded-2xl border border-white/5 text-center">
+                        <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">
+                          Total Snap Score
+                        </p>
+                        <p className="text-3xl font-black text-yellow-400">482,910</p>
+                        <div className="flex justify-center gap-4 mt-3 text-xs text-zinc-300">
+                          <span>Sent: 241,100</span>
+                          <span>Received: 241,810</span>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-[#181822] rounded-2xl border border-white/5 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-zinc-300">Profile Visitors Today</span>
+                        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                          47 Views
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeModal === 'mod' && (
+                    <div className="space-y-2">
+                      <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-2xl flex items-center gap-2 text-xs text-orange-300 mb-3">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>Active camera streaks currently online for @{targetUser}</span>
+                      </div>
+                      {friendsList.slice(0, 4).map((friend, idx) => (
+                        <div key={idx} className="p-3 bg-[#181822] rounded-2xl border border-white/5 flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <img src={friend.avatar} alt={friend.name} className="w-9 h-9 rounded-full object-cover" />
+                            <div>
+                              <p className="font-bold text-xs text-white">{friend.name}</p>
+                              <p className="text-[10px] text-zinc-400">Snapping back & forth</p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-bold text-yellow-400">Active now</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 bg-[#181822] border-t border-white/10 text-center">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-full py-2.5 bg-white/10 hover:bg-white/15 text-white font-bold text-xs rounded-xl transition-colors"
+              >
+                Close Panel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
